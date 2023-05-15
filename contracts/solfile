@@ -1,0 +1,170 @@
+        struct NFTAttributes {
+            uint256 femme;
+            uint256 handi;
+            uint256 homme;
+            uint256 lancerBalayer;
+            uint256 tricks2;
+            uint256 tricks3;
+            uint256 tricks4;
+            uint256 tricks1;
+        }
+
+        struct Privileges {
+            uint256 bronze;
+            uint256 argent;
+            uint256 or;
+            uint256 platine;
+        }
+
+        mapping(uint256 => NFTAttributes) private _tokenAttributes;
+        mapping(uint256 => Privileges) private _tokenPrivileges;*
+
+
+
+        function setTokenAttributes(
+        uint256 tokenId,
+        NFTAttributes memory attributes
+    ) external onlyOwner {
+        require(_exists(tokenId), "Token does not exist");
+
+        _tokenAttributes[tokenId] = attributes;
+    }
+
+    function setTokenPrivileges(
+        uint256 tokenId,
+        Privileges memory privileges
+    ) external onlyOwner {
+        require(_exists(tokenId), "Token does not exist");
+
+        _tokenPrivileges[tokenId] = privileges;
+    }
+
+    function getTokenAttributes(uint256 tokenId)
+        external
+        view
+        returns (NFTAttributes memory)
+    {
+        require(_exists(tokenId), "Token does not exist");
+
+        return _tokenAttributes[tokenId];
+    }
+
+    function getTokenPrivileges(uint256 tokenId)
+        external
+        view
+        returns (Privileges memory)
+    {
+        require(_exists(tokenId), "Token does not exist");
+
+        return _tokenPrivileges[tokenId];
+    }
+
+
+
+
+    pragma solidity ^0.8.9;
+
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+
+contract MyNFT is ERC721 {
+
+    // The address of the centralized server where the NFTs are stored.
+    address public serverAddress;
+
+    // The mint price of the NFT in euros.
+    uint public mintPrice = 390;
+
+    // The mapping from NFT ID to the owner address.
+    mapping(uint => address) public owners;
+
+    // The mapping from NFT ID to the attributes of the NFT.
+    mapping(uint => uint[]) public attributes;
+
+    // The mapping from NFT ID to the privileges of the NFT.
+    mapping(uint => uint[]) public privileges;
+
+    // The constructor function.
+    function MyNFT() ERC721("MyNFT", "NFT") {
+        serverAddress = address("SERVEURX");
+    }
+
+    // The mint function.
+    function mint(address to) public payable returns (uint nftId) {
+        require(msg.value == mintPrice * 1e18);
+
+        // Generate a random NFT ID.
+        uint nftId = uint(keccak256(abi.encodePacked(block.timestamp, msg.sender)));
+
+        // Set the owner of the NFT.
+        owners[nftId] = to;
+
+        // Set the attributes of the NFT.
+        attributes[nftId] = [
+            20, // Female
+            5, // Handi
+            25, // Male
+            10, // Sweep Throw
+            10, // Tricks 2
+            10, // Tricks 3
+            10, // Tricks 4
+            10, // Tricks 1
+        ];
+
+        // Set the privileges of the NFT.
+        privileges[nftId] = [
+            10, // Bronze privilege
+            10, // Silver privilege
+            10, // Gold privilege
+            10, // Platinum privilege
+        ];
+
+        // Mint the NFT.
+        _mint(to, nftId);
+
+        // Return the NFT ID.
+        return nftId;
+    }
+
+    // The reveal function.
+    function reveal(uint nftId) public {
+        require(owners[nftId] == msg.sender);
+
+        // Set the NFT as revealed.
+        _setTokenURI(nftId, "");
+    }
+
+    // The transfer function.
+    function transfer(address to, uint nftId) public {
+        require(owners[nftId] == msg.sender);
+        require(to != address(0));
+
+        // Transfer the ownership of the NFT.
+        _transfer(msg.sender, to, nftId);
+    }
+
+    // The burn function.
+    function burn(uint nftId) public {
+        require(owners[nftId] == msg.sender);
+
+        // Burn the NFT.
+        _burn(nftId);
+    }
+
+    // The changeOwnership function.
+    function changeOwnership(address newOwner) public {
+        require(msg.sender == owner());
+
+        // Change the ownership of the contract.
+        owner = newOwner;
+    }
+
+    // The getAttributes function.
+    function getAttributes(uint nftId) public view returns (uint[]) {
+        return attributes[nftId];
+    }
+
+    // The getPrivileges function.
+    function getPrivileges(uint nftId) public view returns (uint[]) {
+        return privileges[nftId];
+    }
+}

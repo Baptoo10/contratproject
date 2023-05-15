@@ -9,26 +9,32 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@nomicfoundation/hardhat-chai-matchers": "^1.0.0",
-    "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
-    "@nomiclabs/hardhat-ethers": "^2.0.0",
-    "@nomiclabs/hardhat-etherscan": "^3.0.0",
-    "@typechain/ethers-v5": "^10.1.0",
-    "@typechain/hardhat": "^6.1.2",
+    "@nomicfoundation/hardhat-chai-matchers": "^1.0.6",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
+    "@nomicfoundation/hardhat-toolbox": "^2.0.2",
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-etherscan": "^3.1.7",
+    "@openzeppelin/contracts": "^4.8.3",
+    "@typechain/ethers-v5": "^10.2.1",
+    "@typechain/hardhat": "^6.1.6",
     "@types/chai": "^4.2.0",
     "@types/mocha": ">=9.1.0",
-    "chai": "^4.2.0",
+    "chai": "^4.3.7",
     "eslint": "8.40.0",
     "eslint-config-next": "13.4.1",
-    "ethers": "^6.3.0",
+    "ethers": "^5",
     "hardhat": "^2.14.0",
-    "hardhat-gas-reporter": "^1.0.8",
+    "hardhat-gas-reporter": "^1.0.9",
     "next": "13.4.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "solidity-coverage": "^0.8.1",
+    "solidity-coverage": "^0.8.2",
     "ts-node": ">=8.0.0",
-    "typechain": "^8.1.0",
+    "typechain": "^8.1.1",
     "typescript": ">=4.5.0"
+  },
+  "devDependencies": {
+    "@ethersproject/abi": "^5.7.0",
+    "@ethersproject/providers": "^5.7.2"
   }
 }
