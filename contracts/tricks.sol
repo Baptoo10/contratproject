@@ -329,5 +329,4 @@ contract Tricks is ERC721Enumerable, Ownable {
           setTokenPrivilegesByURI(_NFTURI);
       }*/
 
-
 }
