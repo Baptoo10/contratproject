@@ -13,14 +13,14 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 contract Tricks is ERC721Enumerable, Ownable {
 
     using Address for address payable;
-    using Counters for Counters.Counter;
+    //using Counters for Counters.Counter;
 
-    Counters.Counter private _tokenIdCounter;
+    //Counters.Counter private _tokenIdCounter;
 
     //URI
     string public baseURI;
     string private collectionURI;
-    mapping(string => uint256) private uriToTokenId;
+    //mapping(string => uint256) private uriToTokenId;
 
     //address public serverAddress;
     uint public mintPriceInEuro = 390;
