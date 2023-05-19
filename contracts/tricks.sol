@@ -10,7 +10,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract Tricks is ERC721Enumerable, Ownable {
+contract Tricks is ERC721, ERC721Enumerable, Pausable, Ownable {
 
     using Address for address payable;
     //using Counters for Counters.Counter;
@@ -28,35 +28,35 @@ contract Tricks is ERC721Enumerable, Ownable {
 
     //OTHER VAR
     address[] owners;
-    bool paused = false;
+    //bool paused = false;
 
     //ORACLE TO HAVE PRICE
     AggregatorV3Interface internal priceFeed_ETHUSD;
     AggregatorV3Interface internal priceFeed_EURUSD;
 
-    //ATTRIBUTES & PRIVILEGES
-    mapping(uint256 => NFTAttributes) private _tokenAttributes;
-    mapping(uint256 => NFTPrivileges) private _tokenPrivileges;
+    /*    //ATTRIBUTES & PRIVILEGES
+        mapping(uint256 => NFTAttributes) private _tokenAttributes;
+        mapping(uint256 => NFTPrivileges) private _tokenPrivileges;
 
-    struct NFTAttributes {
-        uint256 femme;
-        uint256 handi;
-        uint256 homme;
-        uint256 lancerBalayer;
-        uint256 tricks2;
-        uint256 tricks3;
-        uint256 tricks4;
-        uint256 tricks1;
-    }
+        struct NFTAttributes {
+            uint256 femme;
+            uint256 handi;
+            uint256 homme;
+            uint256 lancerBalayer;
+            uint256 tricks2;
+            uint256 tricks3;
+            uint256 tricks4;
+            uint256 tricks1;
+        }
 
-    struct NFTPrivileges {
-        uint256 bronze;
-        uint256 argent;
-        uint256 or;
-        uint256 platine;
-    }
+        struct NFTPrivileges {
+            uint256 bronze;
+            uint256 argent;
+            uint256 or;
+            uint256 platine;
+        }
 
-
+    */
 
 
 
@@ -79,7 +79,7 @@ contract Tricks is ERC721Enumerable, Ownable {
         uint256 mintPriceInEther = getTokenPriceInETH();
         require(msg.value >= mintPriceInEther, "Insufficient funds");
 
-        require(!paused, "Contract is paused");
+        // require(!paused, "Contract is paused");
 
         // uint256 supply = totalSupply();
         require(tokenId < maxSupply, "Max supply reached");
@@ -121,29 +121,32 @@ contract Tricks is ERC721Enumerable, Ownable {
         }
     */
 
-    function setTokenAttributesByTokenID(uint256 _tokenID) internal onlyOwner {
-        require(_exists(_tokenID), "ERC721Metadata: Le token ID n'existe pas.");
 
-        // Parcourir les attributs dans le fichier JSON correspondant à l'URI du token
-        // Stocker les données dans la struct NFTAttributes
+    /*
+        function setTokenAttributesByTokenID(uint256 _tokenID) internal onlyOwner {
+            require(_exists(_tokenID), "ERC721Metadata: Le token ID n'existe pas.");
 
-        NFTAttributes memory newAttributes;
+            // Parcourir les attributs dans le fichier JSON correspondant à l'URI du token
+            // Stocker les données dans la struct NFTAttributes
 
-        _tokenAttributes[_tokenID] = newAttributes;
-    }
+            NFTAttributes memory newAttributes;
+
+            _tokenAttributes[_tokenID] = newAttributes;
+        }
 
 
-    function setTokenPrivilegesByTokenID(uint256 _tokenID) internal onlyOwner {
-        require(_exists(_tokenID), "ERC721Metadata: Le token ID n'existe pas.");
 
-        // Parcourir les privileges dans le fichier JSON correspondant à l'URI du token
-        // Stocker les données dans la struct NFTPrivileges
+        function setTokenPrivilegesByTokenID(uint256 _tokenID) internal onlyOwner {
+            require(_exists(_tokenID), "ERC721Metadata: Le token ID n'existe pas.");
 
-        NFTPrivileges memory newPrivileges;
+            // Parcourir les privileges dans le fichier JSON correspondant à l'URI du token
+            // Stocker les données dans la struct NFTPrivileges
 
-        _tokenPrivileges[_tokenID] = newPrivileges;
-    }
+            NFTPrivileges memory newPrivileges;
 
+            _tokenPrivileges[_tokenID] = newPrivileges;
+        }
+    */
 
     /*
         //en fonction de la valeur "privileges" existante dans le fichier .json de chaque NFT
@@ -209,7 +212,7 @@ contract Tricks is ERC721Enumerable, Ownable {
         require(priceEthUsd > 0, "ETH/USD price feed error");
 
         // Convert price in US Dollar
-        uint256 priceInUsd = (mintPriceInEuro * priceEurUsd) / 10**(priceFeed_EURUSD.decimals() + 2);
+        uint256 priceInUsd = (mintPriceInEuro * priceEurUsd) / 10**(priceFeed_EURUSD.decimals());
 
         // Convert price in Ether for US Dollar price
         uint256 priceInEth = (priceInUsd * 10**(priceFeed_ETHUSD.decimals()) * 10**18) / priceEthUsd;
@@ -217,27 +220,28 @@ contract Tricks is ERC721Enumerable, Ownable {
         return priceInEth;
     }
 
+    /*
+        function getTokenAttributesByID(uint256 _tokenID) public view returns (NFTAttributes memory) {
 
-    function getTokenAttributesByID(uint256 _tokenID) public view returns (NFTAttributes memory) {
+            // Browse the attributes in the JSON file corresponding to the token ID
+            // Return the _tokenAttributes array for the token in question
 
-        // Browse the attributes in the JSON file corresponding to the token ID
-        // Return the _tokenAttributes array for the token in question
+            require(_exists(_tokenID), "ERC721Metadata: L'URI associee au token n'existe pas. Le token n'existe donc pas.");
 
-        require(_exists(_tokenID), "ERC721Metadata: L'URI associee au token n'existe pas. Le token n'existe donc pas.");
+            return _tokenAttributes[_tokenID];
 
-        return _tokenAttributes[_tokenID];
+        }
 
-    }
+        function getTokenPrivilegesByID(uint256 _tokenID) public view returns (NFTPrivileges memory) {
 
-    function getTokenPrivilegesByID(uint256 _tokenID) public view returns (NFTPrivileges memory) {
+            // Browse the privileges in the JSON file corresponding to the token ID
+            // Return the _tokenPrivileges array for the token in question
 
-        // Browse the privileges in the JSON file corresponding to the token ID
-        // Return the _tokenPrivileges array for the token in question
+            require(_exists(_tokenID), "ERC721Metadata: L'URI associee au token n'existe pas. Le token n'existe donc pas.");
 
-        require(_exists(_tokenID), "ERC721Metadata: L'URI associee au token n'existe pas. Le token n'existe donc pas.");
-
-        return _tokenPrivileges[_tokenID];
-    }
+            return _tokenPrivileges[_tokenID];
+        }
+    */
 
     /*function getTokenIdByURI(string memory _tokenURI) public view returns (uint256) {
         uint256 totalTokens = totalSupply();
@@ -270,14 +274,20 @@ contract Tricks is ERC721Enumerable, Ownable {
     //OTHER FUNCTIONS
 
     //To pause fonctionnalities of the contract (where should we call the function ?)
-    function pause() public onlyOwner {
+    /*function pause() public onlyOwner {
         paused = true;
     }
     //To unpause
     function unpause() public onlyOwner {
         paused = false;
+    }*//*
+    function pause() public onlyOwner {
+        pause();
     }
 
+    function unpause() public onlyOwner {
+        unpause();
+    }*/
 
     function tokenURI(uint256 tokenId) public view virtual override(ERC721) returns (string memory) {
         require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
@@ -292,15 +302,19 @@ contract Tricks is ERC721Enumerable, Ownable {
 
 
     //function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual   { }
-    function _burn(uint256 tokenId) internal override(ERC721) {
-        super._burn(tokenId);
+    function burn(uint256 tokenId) external {
+        _burn(tokenId);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual {
-        super._beforeTokenTransfer(from, to, tokenId, 1); //batchSize specifie combien de jetons sont transferes
-        // dans un seul lot. Ici on transfere un seul token a la fois, donc la valeur de batchSize est 1.
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize) internal whenNotPaused
+    override(ERC721, ERC721Enumerable) {
+        super._beforeTokenTransfer(from, to, tokenId, batchSize);
+    }
 
-        require(to != address(0), "ERC721: transaction a l'adresse 0x");
+    // The following functions are overrides required by Solidity.
+
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC721Enumerable) returns (bool) {
+        return super.supportsInterface(interfaceId);
     }
 
     /*  /// MINT ///
@@ -328,5 +342,6 @@ contract Tricks is ERC721Enumerable, Ownable {
           setTokenAttributesByURI(_NFTURI);
           setTokenPrivilegesByURI(_NFTURI);
       }*/
+
 
 }
