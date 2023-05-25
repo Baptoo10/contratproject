@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 
-contract LaisserPasser is ERC1155, Pausable, Ownable, ERC1155Supply {
+contract LaisserPasser is ERC1155, Pausable, Ownable, ERC1155Burnable, ERC1155Supply {
 
     //URI
     string public baseURI;
@@ -57,8 +57,6 @@ contract LaisserPasser is ERC1155, Pausable, Ownable, ERC1155Supply {
     }
 
 
-
-
     //SETTERS
     //To change the base URI //Allows the contract owner to modify the base URL of the metadata of the NFTs in the collection.
     function setBaseURI(string memory _newBaseURI) external onlyOwner {
@@ -79,22 +77,6 @@ contract LaisserPasser is ERC1155, Pausable, Ownable, ERC1155Supply {
     function setMinter(address _minter) external onlyOwner {
         minter=_minter;
     }
-
-
-
-    //OTHER FUNCTIONS
-
-    function burn( address account, uint256 tokenId, uint256 amount) public virtual {
-        require(account == _msgSender(),"ERC1155: caller is not token owner");
-        _burn(account, tokenId, amount);
-    }
-
-    function burnBatch(address account, uint256[] memory tokenIds, uint256[] memory amounts) public virtual {
-        require(account == _msgSender(), "ERC1155: caller is not token owner");
-        _burnBatch(account, tokenIds, amounts);
-    }
-
-
 
     function _beforeTokenTransfer(address operator, address from, address to, uint256[] memory tokenIds, uint256[] memory amounts, bytes memory data)
     internal

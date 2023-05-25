@@ -9,15 +9,17 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 
-contract Performances is ERC721, ERC721Enumerable, Pausable, Ownable {
+contract Tricks is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Pausable, Ownable {
 
     //URI
     string public baseURI;
     string public collectionURI;
 
     //supply
-    uint256 public maxSupply = 50;
+    uint256 public maxSupply = 25;
 
     //minter
     address public minter;
@@ -67,15 +69,13 @@ contract Performances is ERC721, ERC721Enumerable, Pausable, Ownable {
 
     //OTHER FUNCTIONS
 
-    function tokenURI(uint256 tokenId) public view virtual override(ERC721) returns (string memory) {
+    function tokenURI(uint256 tokenId) public view virtual override(ERC721, ERC721URIStorage) returns (string memory) {
         require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
         return string(abi.encodePacked(baseURI, Strings.toString(tokenId), ".json"));
     }
 
-    //function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual   { }
-    function burn(uint256 tokenId) external {
-        require(msg.sender == ERC721.ownerOf(tokenId), "You're not the owner of this token");
-        _burn(tokenId);
+    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
+        super._burn(tokenId);
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize) internal whenNotPaused
@@ -84,10 +84,7 @@ contract Performances is ERC721, ERC721Enumerable, Pausable, Ownable {
     }
 
     // The following functions are overrides required by Solidity.
-
     function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC721Enumerable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
-
-
 }
