@@ -12,35 +12,28 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Equipements is ERC721, ERC721Enumerable, Pausable, Ownable {
 
-    using Address for address payable;
-
     //URI
     string public baseURI;
     string public collectionURI;
 
-    //address public serverAddress;
-    uint public mintPriceInEuro = 390;
+    //supply
     uint256 public maxSupply = 25;
 
-    //ORACLE TO HAVE PRICE
-    AggregatorV3Interface internal priceFeed_ETHUSD;
-    AggregatorV3Interface internal priceFeed_EURUSD;
+    //minter
+    address public minter;
 
 
-    constructor(string memory _name, string memory _symbol, string memory _baseURI, address _priceFeedETHUSD, address _priceFeedEURUSD) ERC721(_name, _symbol) {
+    constructor(string memory _name, string memory _symbol, string memory _baseURI) ERC721(_name, _symbol) {
 
         baseURI = _baseURI;
-        priceFeed_ETHUSD = AggregatorV3Interface(_priceFeedETHUSD); //0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419
-        priceFeed_EURUSD = AggregatorV3Interface(_priceFeedEURUSD); //0xb49f677943BC038e9857d61E7d053CaA2C1734C1
 
     }
 
 
-    function NFTMint(address _to, uint256 tokenId) public payable onlyOwner {
+    //voir pour modification si tout est a mint one shot
+    function NFTMintById(address _to, uint256 tokenId) public {
 
-        uint256 mintPriceInEther = getTokenPriceInETH();
-        require(msg.value >= mintPriceInEther, "Insufficient funds");
-
+        require(msg.sender == minter || msg.sender == owner(), "you're not the minter");
         require(tokenId < maxSupply, "Max supply reached");
         require(tokenId > 0, "Id starts at 1"); //or require(tokenId >= 0, "Id starts at 0");
 
@@ -65,41 +58,14 @@ contract Equipements is ERC721, ERC721Enumerable, Pausable, Ownable {
         maxSupply = _supp;
     }
 
-
-    //GETTERS
-
-    function getLatestPriceEURUSD() private view returns (uint256) {
-        (, int256 price, , , ) = priceFeed_EURUSD.latestRoundData();
-        return uint256(price);
-    }
-
-    function getLatestPriceETHUSD() private view returns (uint256) {
-        (, int256 price, , , ) = priceFeed_ETHUSD.latestRoundData();
-        return uint256(price);
+    //To set a new mint address
+    function setMinter(address _minter) external onlyOwner {
+        minter=_minter;
     }
 
 
-    function getTokenPriceInETH() public view returns (uint256) {
-        // Get rate for EUR/USD
-        uint256 priceEurUsd = getLatestPriceEURUSD();
-        // Get rate for ETH/USD
-        uint256 priceEthUsd = getLatestPriceETHUSD();
-
-        //check if there is any error price
-        require(priceEurUsd > 0, "EUR/USD price feed error");
-        require(priceEthUsd > 0, "ETH/USD price feed error");
-
-        // Convert price in US Dollar
-        uint256 priceInUsd = (mintPriceInEuro * priceEurUsd) / 10**(priceFeed_EURUSD.decimals());
-
-        // Convert price in Ether for US Dollar price
-        uint256 priceInEth = (priceInUsd * 10**(priceFeed_ETHUSD.decimals()) * 10**18) / priceEthUsd;
-
-        return priceInEth;
-    }
 
     //OTHER FUNCTIONS
-
 
     function tokenURI(uint256 tokenId) public view virtual override(ERC721) returns (string memory) {
         require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
@@ -108,6 +74,7 @@ contract Equipements is ERC721, ERC721Enumerable, Pausable, Ownable {
 
     //function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual   { }
     function burn(uint256 tokenId) external {
+        require(msg.sender == ERC721.ownerOf(tokenId), "You're not the owner of this token");
         _burn(tokenId);
     }
 

@@ -13,36 +13,30 @@ import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 
 contract LaisserPasser is ERC1155, Pausable, Ownable, ERC1155Supply {
 
-    using Address for address payable;
-
     //URI
     string public baseURI;
     string public collectionURI;
 
-    //address public serverAddress;
-    uint public mintPriceInEuro = 170;
+    string public collectionName;
+
+    //supply
     uint256 public maxSupply = 50;
 
-    //ORACLE TO HAVE PRICE
-    AggregatorV3Interface internal priceFeed_ETHUSD;
-    AggregatorV3Interface internal priceFeed_EURUSD;
+    //minter
+    address public minter;
 
 
-    constructor(string memory _baseURI, address _priceFeedETHUSD, address _priceFeedEURUSD) ERC1155(_baseURI) {
+    constructor(string memory _collectionName, string memory _baseURI) ERC1155(_baseURI) {
 
-        baseURI = _baseURI;
-        priceFeed_ETHUSD = AggregatorV3Interface(_priceFeedETHUSD); //0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419
-        priceFeed_EURUSD = AggregatorV3Interface(_priceFeedEURUSD); //0xb49f677943BC038e9857d61E7d053CaA2C1734C1
+        collectionName = _collectionName;
 
     }
 
 
-    function NFTMint(address _to, uint256 tokenId, uint256 amount) public payable onlyOwner {
+    function NFTMint(address _to, uint256 tokenId, uint256 amount) public onlyOwner {
 
-        uint256 mintPriceInEther = getTokenPriceInETH();
-        require(msg.value >= mintPriceInEther, "Insufficient funds");
-
-        require(tokenId < maxSupply, "Max supply reached"); //gonna change if first tokenId==1
+        require(msg.sender == minter || msg.sender == owner(), "you're not the minter");
+        require(tokenId < maxSupply, "Max supply reached");
         require(tokenId > 0, "Id starts at 1"); //or require(tokenId >= 0, "Id starts at 0");
 
         _mint(_to, tokenId, amount, "");
@@ -50,9 +44,19 @@ contract LaisserPasser is ERC1155, Pausable, Ownable, ERC1155Supply {
     }
 
     function mintBatch(address to, uint256[] memory tokenIds, uint256[] memory amounts, bytes memory data) public onlyOwner {
+
+        require(msg.sender == minter || msg.sender == owner(), "you're not the minter");
         require(tokenIds.length == amounts.length, "Array length mismatch");
+
+        for(uint256 i=0 ; i<tokenIds.length ; i++){
+            require(tokenIds[i] < maxSupply, "Max supply reached");
+            require(tokenIds[i] > 0, "Id starts at 1"); //or require(tokenId >= 0, "Id starts at 0");
+        }
+
         _mintBatch(to, tokenIds, amounts, data);
     }
+
+
 
 
     //SETTERS
@@ -71,54 +75,26 @@ contract LaisserPasser is ERC1155, Pausable, Ownable, ERC1155Supply {
         maxSupply = _supp;
     }
 
-
-    //GETTERS
-
-    function getLatestPriceEURUSD() private view returns (uint256) {
-        (, int256 price, , , ) = priceFeed_EURUSD.latestRoundData();
-        return uint256(price);
-    }
-
-    function getLatestPriceETHUSD() private view returns (uint256) {
-        (, int256 price, , , ) = priceFeed_ETHUSD.latestRoundData();
-        return uint256(price);
+    //To set a new mint address
+    function setMinter(address _minter) external onlyOwner {
+        minter=_minter;
     }
 
 
-    function getTokenPriceInETH() public view returns (uint256) {
-        // Get rate for EUR/USD
-        uint256 priceEurUsd = getLatestPriceEURUSD();
-        // Get rate for ETH/USD
-        uint256 priceEthUsd = getLatestPriceETHUSD();
 
-        //check if there is any error price
-        require(priceEurUsd > 0, "EUR/USD price feed error");
-        require(priceEthUsd > 0, "ETH/USD price feed error");
+    //OTHER FUNCTIONS
 
-        // Convert price in US Dollar
-        uint256 priceInUsd = (mintPriceInEuro * priceEurUsd) / 10**(priceFeed_EURUSD.decimals());
-
-        // Convert price in Ether for US Dollar price
-        uint256 priceInEth = (priceInUsd * 10**(priceFeed_ETHUSD.decimals()) * 10**18) / priceEthUsd;
-
-        return priceInEth;
-    }
-
-
-    /*
-        //OTHER FUNCTIONS
-
-
-        function uri(uint256 tokenId) public view virtual override(ERC1155) returns (string memory) {
-            require(_exists(tokenId), "ERC1155Metadata: URI query for nonexistent token");
-            return string(abi.encodePacked(baseURI, Strings.toString(tokenId), ".json"));
-        }
-    */
-
-    // The following functions are overrides required by Solidity.
-    function burn(address account, uint256 tokenId, uint256 amount) external {
+    function burn( address account, uint256 tokenId, uint256 amount) public virtual {
+        require(account == _msgSender(),"ERC1155: caller is not token owner");
         _burn(account, tokenId, amount);
     }
+
+    function burnBatch(address account, uint256[] memory tokenIds, uint256[] memory amounts) public virtual {
+        require(account == _msgSender(), "ERC1155: caller is not token owner");
+        _burnBatch(account, tokenIds, amounts);
+    }
+
+
 
     function _beforeTokenTransfer(address operator, address from, address to, uint256[] memory tokenIds, uint256[] memory amounts, bytes memory data)
     internal
@@ -130,4 +106,5 @@ contract LaisserPasser is ERC1155, Pausable, Ownable, ERC1155Supply {
     function supportsInterface(bytes4 interfaceId) public view override(ERC1155) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
+
 }
