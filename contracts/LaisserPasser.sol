@@ -36,7 +36,7 @@ contract LaisserPasser is ERC1155, Pausable, Ownable, ERC1155Supply {
     function NFTMint(address _to, uint256 tokenId, uint256 amount) public onlyOwner {
 
         require(msg.sender == minter || msg.sender == owner(), "you're not the minter");
-        require(tokenId < maxSupply, "Max supply reached");
+        require(tokenId < maxSupply, "Max supply reached"); //could be changed, depend on  the following line
         require(tokenId > 0, "Id starts at 1"); //or require(tokenId >= 0, "Id starts at 0");
 
         _mint(_to, tokenId, amount, "");
