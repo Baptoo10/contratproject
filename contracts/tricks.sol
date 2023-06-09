@@ -36,8 +36,8 @@ contract Tricks is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, P
     function NFTMintById(address _to, uint256 tokenId) public {
 
         require(msg.sender == minter || msg.sender == owner(), "you're not the minter");
-        require(tokenId <= maxSupply, "Max supply reached"); //could be changed, depend on  the following line
-        require(tokenId > 0, "Id starts at 1"); //or require(tokenId >= 0, "Id starts at 0");
+        require(tokenId <= maxSupply, "Max supply reached");
+        require(tokenId > 0, "Id starts at 1");
 
         _safeMint(_to, tokenId);
 
