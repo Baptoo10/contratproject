@@ -29,6 +29,7 @@ contract LaisserPasser is ERC1155, Pausable, Ownable, ERC1155Burnable, ERC1155Su
     constructor(string memory _collectionName, string memory _baseURI) ERC1155(_baseURI) {
 
         collectionName = _collectionName;
+        baseURI = _baseURI;
 
     }
 
@@ -36,8 +37,8 @@ contract LaisserPasser is ERC1155, Pausable, Ownable, ERC1155Burnable, ERC1155Su
     function NFTMint(address _to, uint256 tokenId, uint256 amount) public onlyOwner {
 
         require(msg.sender == minter || msg.sender == owner(), "you're not the minter");
-        require(tokenId < maxSupply, "Max supply reached"); //could be changed, depend on  the following line
-        require(tokenId > 0, "Id starts at 1"); //or require(tokenId >= 0, "Id starts at 0");
+        require(tokenId <= 100+maxSupply, "Max supply reached");
+        require(tokenId > 100, "Id starts at 101");
 
         _mint(_to, tokenId, amount, "");
 
@@ -49,8 +50,8 @@ contract LaisserPasser is ERC1155, Pausable, Ownable, ERC1155Burnable, ERC1155Su
         require(tokenIds.length == amounts.length, "Array length mismatch");
 
         for(uint256 i=0 ; i<tokenIds.length ; i++){
-            require(tokenIds[i] < maxSupply, "Max supply reached");
-            require(tokenIds[i] > 0, "Id starts at 1"); //or require(tokenId >= 0, "Id starts at 0");
+            require(tokenIds[i] <= 100+maxSupply, "Max supply reached");
+            require(tokenIds[i] > 100, "Id starts at 101");
         }
 
         _mintBatch(to, tokenIds, amounts, data);
